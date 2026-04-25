@@ -6,10 +6,11 @@ import ResultPage from './pages/ResultPage';
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-950 text-white font-body selection:bg-indigo-500/30">
+      <div className="min-h-screen bg-[var(--page-bg)] text-[var(--ink)] selection:bg-blue-200">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/result" element={<ResultPage />} />
+          <Route path="/product/:productId" element={<ResultPage />} />
         </Routes>
         <Toaster position="bottom-center" />
       </div>

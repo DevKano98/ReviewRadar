@@ -4,17 +4,16 @@ export default function VerdictBanner({ verdict, oneLineSummary, trustScore }) {
   const style = getVerdictStyles(verdict);
 
   return (
-    <div className={`w-full ${style.bg} border-y ${style.border} py-6 px-4 animate-slide-down mb-8`}>
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+    <div className={`rounded-[28px] border ${style.border} ${style.bg} px-6 py-6`}>
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 className={`font-display text-2xl md:text-3xl font-bold ${style.text} mb-2`}>
-            {style.title}
-          </h2>
-          <p className="text-gray-300 text-lg">{oneLineSummary}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--ink-soft)]">Final recommendation</p>
+          <h2 className={`mt-2 text-3xl font-semibold tracking-tight ${style.text}`}>{style.title}</h2>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--ink-soft)]">{oneLineSummary}</p>
         </div>
-        <div className="flex flex-col items-center justify-center bg-gray-950/50 px-6 py-3 rounded-lg border border-gray-800 shadow-inner">
-          <span className="text-gray-400 text-sm uppercase tracking-wider mb-1">Trust Score</span>
-          <span className={`text-3xl font-mono font-bold ${style.text}`}>{trustScore}/100</span>
+        <div className="rounded-[24px] border border-white/70 bg-white/70 px-5 py-4 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--ink-soft)]">Trust score</p>
+          <p className={`mt-2 text-4xl font-semibold tracking-tight ${style.text}`}>{Math.round(Number(trustScore || 0))}</p>
         </div>
       </div>
     </div>

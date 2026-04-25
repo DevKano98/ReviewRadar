@@ -113,7 +113,13 @@ async def scrape_stream(url: str = Query(...)):
                         review.get("body", ""),
                         review.get("rating", 3)
                     )
-                    classified = {**review, **result}
+                    classified = {
+                        **review,
+                        **result,
+                        "fake_confidence": result["confidence"],
+                        "fake_reasons": result["reasons"],
+                        "date": review.get("date") or review.get("review_date", ""),
+                    }
                     classified_reviews.append(classified)
                     
                     # Stream each classification result
@@ -122,10 +128,14 @@ async def scrape_stream(url: str = Query(...)):
                         "data": json.dumps({
                             "reviewer_name": review.get("reviewer_name", ""),
                             "rating": review.get("rating", 3),
+                            "title": review.get("title", ""),
                             "body": review.get("body", "")[:100],
+                            "date": review.get("date") or review.get("review_date", ""),
                             "is_fake": result["is_fake"],
                             "confidence": result["confidence"],
+                            "fake_confidence": result["confidence"],
                             "reasons": result["reasons"],
+                            "fake_reasons": result["reasons"],
                         })
                     }
                     await asyncio.sleep(0.03)  # Smooth streaming

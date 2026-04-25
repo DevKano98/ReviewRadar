@@ -4,49 +4,56 @@ import { StarIcon, VerifiedIcon, ExpandMoreIcon } from './icons';
 export default function ReviewCard({ review }) {
   const [expanded, setExpanded] = useState(false);
   const isFake = review.is_fake;
-  
+  const confidenceBase = Number(review.fake_confidence ?? review.confidence ?? 0);
+  const confidence = Math.round((isFake ? confidenceBase : 1 - confidenceBase) * 100);
+
   return (
-    <div className={`bg-gray-900 border ${isFake ? 'border-l-4 border-l-red-500' : 'border-l-4 border-l-emerald-500'} border-y-gray-800 border-r-gray-800 rounded-lg p-5 shadow-sm transition-all animate-fade-in`}>
-      <div className="flex justify-between items-start mb-3">
+    <div className="rounded-[28px] border border-[var(--line)] bg-white p-5 shadow-sm transition hover:-translate-y-0.5">
+      <div className="mb-4 flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2">
-            <span className="font-medium text-gray-100">{review.reviewer_name}</span>
-            <VerifiedIcon className="text-blue-400" sx={{ fontSize: 16 }} />
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-[var(--ink)]">{review.reviewer_name || 'Anonymous'}</span>
+            <VerifiedIcon className="text-[var(--accent)]" sx={{ fontSize: 16 }} />
           </div>
-          <div className="flex items-center mt-1 space-x-2 text-sm text-gray-400">
-            <div className="flex text-yellow-500">
-              {[...Array(5)].map((_, i) => (
-                <StarIcon key={i} sx={{ fontSize: 14 }} className={i < review.rating ? "opacity-100" : "opacity-30"} />
+          <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[var(--ink-soft)]">
+            <div className="flex text-amber-500">
+              {[...Array(5)].map((_, index) => (
+                <StarIcon
+                  key={index}
+                  sx={{ fontSize: 14 }}
+                  className={index < review.rating ? 'opacity-100' : 'opacity-25'}
+                />
               ))}
             </div>
-            <span>• {review.date || 'Recent'}</span>
+            <span>{review.date || 'Recent'}</span>
           </div>
         </div>
-        <div className={`px-2.5 py-1 rounded text-xs font-bold ${isFake ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-          {isFake ? 'FAKE' : 'REAL'} {Math.round((isFake ? review.fake_confidence : 1 - review.fake_confidence) * 100)}%
+
+        <div className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${isFake ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
+          {isFake ? 'Fake' : 'Real'} {Number.isFinite(confidence) ? `${confidence}%` : '--'}
         </div>
       </div>
 
-      <div className="mb-3">
-        <h4 className="font-semibold text-gray-200 mb-1">{review.title}</h4>
-        <p className={`text-gray-400 text-sm leading-relaxed ${!expanded && 'line-clamp-3'}`}>
+      <div>
+        <h4 className="mb-2 text-lg font-semibold tracking-tight text-[var(--ink)]">{review.title || 'Untitled review'}</h4>
+        <p className={`text-sm leading-7 text-[var(--ink-soft)] ${!expanded ? 'line-clamp-4' : ''}`}>
           {review.body}
         </p>
-        {review.body?.length > 150 && (
-          <button 
-            onClick={() => setExpanded(!expanded)}
-            className="text-indigo-400 text-sm mt-1 hover:text-indigo-300 flex items-center"
+        {review.body?.length > 180 && (
+          <button
+            onClick={() => setExpanded((value) => !value)}
+            className="mt-3 flex items-center gap-1 text-sm font-medium text-[var(--accent)]"
           >
-            {expanded ? "Show less" : "Read more"}
-            <ExpandMoreIcon sx={{ fontSize: 16 }} className={`ml-1 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+            {expanded ? 'Show less' : 'Read more'}
+            <ExpandMoreIcon sx={{ fontSize: 16 }} className={expanded ? 'rotate-180 transition-transform' : 'transition-transform'} />
           </button>
         )}
       </div>
 
       {isFake && review.reasons?.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-800">
-          {review.reasons.map((reason, i) => (
-            <span key={i} className="px-2 py-1 bg-gray-800 text-gray-300 text-xs rounded-md border border-gray-700">
+        <div className="mt-5 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
+          {review.reasons.map((reason, index) => (
+            <span key={index} className="rounded-full border border-[var(--line)] bg-[var(--surface-muted)] px-3 py-1 text-xs text-[var(--ink-soft)]">
               {reason}
             </span>
           ))}

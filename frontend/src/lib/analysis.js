@@ -2,43 +2,50 @@
  * Helper utilities for analyzing and formatting ReviewRadar data.
  */
 
+function normalizeVerdict(verdict) {
+  return String(verdict || 'CAUTION').toUpperCase().replace(/\s+/g, '_');
+}
+
 export const getVerdictStyles = (verdict) => {
-  const normalizedVerdict = verdict?.toUpperCase() || 'CAUTION';
+  const normalizedVerdict = normalizeVerdict(verdict);
 
   switch (normalizedVerdict) {
     case 'BUY':
+    case 'WORTH_BUYING':
       return {
-        bg: 'bg-emerald-900/40',
-        border: 'border-emerald-500/50',
-        text: 'text-emerald-400',
+        bg: 'bg-emerald-50',
+        border: 'border-emerald-200',
+        text: 'text-emerald-700',
         title: 'Worth Buying',
-        badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        badge: 'bg-emerald-100 text-emerald-700 border-emerald-200',
       };
     case 'AVOID':
+    case 'SKIP_THIS':
       return {
-        bg: 'bg-red-900/40',
-        border: 'border-red-500/50',
-        text: 'text-red-400',
-        title: 'Skip This Product',
-        badge: 'bg-red-500/10 text-red-400 border-red-500/20',
+        bg: 'bg-rose-50',
+        border: 'border-rose-200',
+        text: 'text-rose-700',
+        title: 'Skip This',
+        badge: 'bg-rose-100 text-rose-700 border-rose-200',
       };
     case 'CAUTION':
+    case 'BUY_WITH_CAUTION':
     default:
       return {
-        bg: 'bg-yellow-900/40',
-        border: 'border-yellow-500/50',
-        text: 'text-yellow-400',
+        bg: 'bg-amber-50',
+        border: 'border-amber-200',
+        text: 'text-amber-700',
         title: 'Buy With Caution',
-        badge: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+        badge: 'bg-amber-100 text-amber-700 border-amber-200',
       };
   }
 };
 
 export const getScoreColorClass = (score) => {
   const numScore = Number(score) || 0;
-  if (numScore < 40) return 'text-red-400 stroke-red-400';
-  if (numScore < 70) return 'text-yellow-400 stroke-yellow-400';
-  return 'text-emerald-400 stroke-emerald-400';
+  if (numScore < 40) return 'text-rose-600 stroke-rose-500';
+  if (numScore < 70) return 'text-amber-600 stroke-amber-500';
+  return 'text-emerald-600 stroke-emerald-500';
 };
 
 export const sortReviews = (reviews, sortBy) => {
@@ -46,13 +53,13 @@ export const sortReviews = (reviews, sortBy) => {
 
   return [...reviews].sort((a, b) => {
     if (sortBy === 'confidence') {
-      const confA = a.is_fake ? a.fake_confidence : 0;
-      const confB = b.is_fake ? b.fake_confidence : 0;
+      const confA = Number(a.fake_confidence ?? a.confidence ?? 0);
+      const confB = Number(b.fake_confidence ?? b.confidence ?? 0);
       return confB - confA;
     }
 
     if (sortBy === 'rating') {
-      return (a.rating || 0) - (b.rating || 0);
+      return Number(a.rating || 0) - Number(b.rating || 0);
     }
 
     return 0;

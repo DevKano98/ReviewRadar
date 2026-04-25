@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ContentPasteIcon, SearchIcon, ShoppingCartIcon, LocalMallIcon } from './icons';
 import { isValidProductURL, detectPlatform } from '../lib/urlUtils';
 
-export default function URLInput({ onSubmit, recentSearches = [] }) {
+export default function URLInput({ onSubmit }) {
   const [url, setUrl] = useState('');
   const [error, setError] = useState(null);
 
@@ -13,8 +13,8 @@ export default function URLInput({ onSubmit, recentSearches = [] }) {
       const text = await navigator.clipboard.readText();
       setUrl(text);
       setError(null);
-    } catch (err) {
-      console.error("Failed to read clipboard");
+    } catch {
+      setError('Clipboard access was blocked. Paste the link manually.');
     }
   };
 
@@ -30,58 +30,55 @@ export default function URLInput({ onSubmit, recentSearches = [] }) {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="relative group">
-        <div className={`flex items-center bg-gray-900 border ${error ? 'border-red-500' : 'border-gray-800'} rounded-lg focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all shadow-sm`}>
-          
-          <div className="pl-4 pr-2 flex items-center justify-center text-gray-500">
-            {platform === 'amazon' ? <ShoppingCartIcon className="text-yellow-500" fontSize="small"/> : 
-             platform === 'flipkart' ? <LocalMallIcon className="text-blue-500" fontSize="small"/> : 
-             <SearchIcon fontSize="small"/>}
+    <div className="w-full">
+      <form onSubmit={handleSubmit} className="relative">
+        <div className={`rounded-[28px] border bg-white/90 p-2 shadow-[0_10px_30px_rgba(89,76,53,0.08)] ${error ? 'border-rose-300' : 'border-[var(--line)]'}`}>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 items-center rounded-[22px] bg-[var(--surface-muted)] px-4 py-3">
+              <div className="mr-3 text-[var(--ink-soft)]">
+                {platform === 'amazon' ? (
+                  <ShoppingCartIcon className="text-amber-600" fontSize="small" />
+                ) : platform === 'flipkart' ? (
+                  <LocalMallIcon className="text-sky-600" fontSize="small" />
+                ) : (
+                  <SearchIcon fontSize="small" />
+                )}
+              </div>
+
+              <input
+                type="text"
+                value={url}
+                onChange={(e) => {
+                  setUrl(e.target.value);
+                  setError(null);
+                }}
+                placeholder="Paste an Amazon or Flipkart product URL"
+                className="w-full bg-transparent text-base text-[var(--ink)] outline-none placeholder:text-[var(--ink-soft)]"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handlePaste}
+                className="inline-flex items-center justify-center rounded-[18px] border border-[var(--line)] bg-white px-4 py-3 text-[var(--ink-soft)] transition hover:text-[var(--ink)]"
+                title="Paste from clipboard"
+              >
+                <ContentPasteIcon fontSize="small" />
+              </button>
+
+              <button
+                type="submit"
+                className="rounded-[18px] bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(47,100,255,0.25)] transition hover:opacity-95"
+              >
+                Start analysis
+              </button>
+            </div>
           </div>
-
-          <input
-            type="text"
-            value={url}
-            onChange={(e) => { setUrl(e.target.value); setError(null); }}
-            placeholder="Paste Amazon or Flipkart product URL..."
-            className="flex-1 bg-transparent py-4 px-2 text-gray-100 placeholder-gray-600 focus:outline-none font-body text-lg"
-          />
-
-          <button
-            type="button"
-            onClick={handlePaste}
-            className="px-3 text-gray-500 hover:text-gray-300 transition-colors"
-            title="Paste from clipboard"
-          >
-            <ContentPasteIcon fontSize="small" />
-          </button>
-
-          <button
-            type="submit"
-            className="m-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md font-medium transition-colors"
-          >
-            Analyze
-          </button>
         </div>
-        
-        {error && <p className="absolute -bottom-6 left-0 text-red-400 text-sm mt-1">{error}</p>}
+
+        {error ? <p className="mt-3 text-sm text-rose-600">{error}</p> : null}
       </form>
-
-      {recentSearches.length > 0 && (
-        <div className="mt-8 flex flex-wrap gap-2 items-center text-sm">
-          <span className="text-gray-500 mr-2">Recent:</span>
-          {recentSearches.map((search, i) => (
-            <button
-              key={i}
-              onClick={() => { setUrl(search.url); onSubmit(search.url); }}
-              className="px-3 py-1 bg-gray-900 border border-gray-800 hover:border-gray-600 rounded-full text-gray-300 transition-colors truncate max-w-[150px]"
-            >
-              {search.title || "Product URL"}
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

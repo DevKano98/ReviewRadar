@@ -8,7 +8,7 @@ export function detectPlatform(url) {
       return "flipkart";
     }
     return "unknown";
-  } catch (e) {
+  } catch {
     return "unknown";
   }
 }
@@ -33,7 +33,7 @@ export function isValidProductURL(url) {
       platform, 
       error: "Invalid product URL format. Must contain /dp/ for Amazon or /p/ for Flipkart." 
     };
-  } catch (err) {
+  } catch {
     return { valid: false, platform: null, error: "Invalid URL string" };
   }
 }

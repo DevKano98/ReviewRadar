@@ -243,3 +243,42 @@ def get_recent_searches(limit: int = 8) -> list[dict]:
             """, (limit,))
             
             return cur.fetchall()
+
+
+def list_products(limit: int = 48) -> list[dict]:
+    """
+    Fetch analyzed products directly from the products table.
+
+    Args:
+        limit: Maximum number of products to return
+
+    Returns:
+        List of product dicts ordered by most recent scrape
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT
+                    id,
+                    url,
+                    platform,
+                    title,
+                    price,
+                    image_url,
+                    rating,
+                    total_reviews,
+                    trust_score,
+                    fake_count,
+                    real_count,
+                    verdict,
+                    gemini_summary,
+                    scraped_at,
+                    created_at
+                FROM products
+                ORDER BY scraped_at DESC NULLS LAST, created_at DESC
+                LIMIT %s
+                """,
+                (limit,),
+            )
+            return cur.fetchall()

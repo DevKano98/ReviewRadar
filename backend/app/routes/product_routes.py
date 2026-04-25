@@ -2,6 +2,8 @@
 Product endpoints for retrieving cached data.
 """
 
+from uuid import UUID
+
 from fastapi import APIRouter, HTTPException, Query
 from app.database import queries
 from app.services.url_utils import normalize_url
@@ -55,8 +57,36 @@ async def recent_searches():
     return serialized
 
 
+@router.get("/library")
+async def product_library(limit: int = Query(48, ge=1, le=200)):
+    """
+    Get analyzed product pages directly from the DB.
+
+    Args:
+        limit: Maximum number of products to return
+
+    Returns:
+        List of analyzed product dicts
+    """
+    results = queries.list_products(limit=limit)
+
+    serialized = []
+    for r in results:
+        row = {}
+        for k, v in r.items():
+            if hasattr(v, "hex"):
+                row[k] = str(v)
+            elif hasattr(v, "isoformat"):
+                row[k] = v.isoformat()
+            else:
+                row[k] = v
+        serialized.append(row)
+
+    return serialized
+
+
 @router.get("/{product_id}")
-async def get_product(product_id: str):
+async def get_product(product_id: UUID):
     """
     Get complete product details with all reviews.
     
@@ -66,7 +96,7 @@ async def get_product(product_id: str):
     Returns:
         Product dict with reviews array
     """
-    product = queries.get_product_with_reviews(product_id)
+    product = queries.get_product_with_reviews(str(product_id))
     
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
