@@ -29,14 +29,14 @@ def main():
     print("REVIEWRADAR ML MODEL TRAINING")
     print("=" * 60)
     
-    # Step 1: Load dataset
+    
     print("\n[1/17] Loading dataset from HuggingFace...")
     dataset = load_dataset("theArijitDas/Fake-Reviews-Dataset")
     df = pd.DataFrame(dataset['train'])
     
     print(f"✓ Loaded {len(df):,} reviews")
     
-    # Step 2: Data cleaning
+   
     print("\n[2/17] Cleaning data...")
     df = df.dropna(subset=['text', 'label'])
     df['text'] = df['text'].astype(str)
@@ -44,24 +44,24 @@ def main():
     
     print(f"✓ Cleaned dataset: {len(df):,} reviews")
     
-    # Step 3: Class distribution
+    
     print("\n[3/17] Class distribution:")
     class_dist = df['label'].value_counts()
     print(f"  Real (0): {class_dist.get(0, 0):,}")
     print(f"  Fake (1): {class_dist.get(1, 0):,}")
     
-    # Step 4: Clean text
+   
     print("\n[4/17] Cleaning review text...")
     df['cleaned_text'] = df['text'].apply(clean_text)
     print("✓ Text preprocessing complete")
     
-    # Step 5: Extract features
+    
     print("\n[5/17] Extracting engineered features...")
     ratings = df['rating'].fillna(3).astype(int).tolist() if 'rating' in df.columns else [3] * len(df)
     features = extract_features(df['cleaned_text'].tolist(), ratings)
     print(f"✓ Extracted {len(features[0])} features per review")
     
-    # Step 6: Train-test split
+    
     print("\n[6/17] Splitting train/test sets (80/20)...")
     X_text = df['cleaned_text'].values
     y = df['label'].values
@@ -73,7 +73,7 @@ def main():
     
     print(f"✓ Train: {len(X_text_train):,} | Test: {len(X_text_test):,}")
     
-    # Step 7: TF-IDF Vectorization
+    
     print("\n[7/17] Creating TF-IDF vectors...")
     vectorizer = TfidfVectorizer(
         max_features=20000,
@@ -89,20 +89,20 @@ def main():
     
     print(f"✓ TF-IDF shape: {X_tfidf_train.shape}")
     
-    # Step 8: Combine TF-IDF + engineered features
+   
     print("\n[8/17] Combining TF-IDF with engineered features...")
     
-    # Convert feature dicts to arrays
+   
     feat_train_array = np.array([[v for v in feat.values()] for feat in X_feat_train])
     feat_test_array = np.array([[v for v in feat.values()] for feat in X_feat_test])
     
-    # Stack sparse and dense features
+   
     X_train_combined = hstack([X_tfidf_train, feat_train_array])
     X_test_combined = hstack([X_tfidf_test, feat_test_array])
     
     print(f"✓ Combined shape: {X_train_combined.shape}")
     
-    # Step 9: Train Logistic Regression
+   
     print("\n[9/17] Training Logistic Regression...")
     lr_model = LogisticRegression(
         max_iter=1000,
@@ -115,7 +115,7 @@ def main():
     lr_acc = accuracy_score(y_test, lr_model.predict(X_test_combined))
     print(f"✓ Logistic Regression Accuracy: {lr_acc:.4f}")
     
-    # Step 10: Train XGBoost (if available)
+   
     print("\n[10/17] Training XGBoost...")
     try:
         from xgboost import XGBClassifier
@@ -131,7 +131,7 @@ def main():
             n_jobs=-1
         )
         
-        # XGBoost needs dense array
+        
         xgb_model.fit(X_train_combined.toarray(), y_train)
         xgb_acc = accuracy_score(y_test, xgb_model.predict(X_test_combined.toarray()))
         print(f"✓ XGBoost Accuracy: {xgb_acc:.4f}")
@@ -141,7 +141,7 @@ def main():
         xgb_model = None
         xgb_acc = 0.0
     
-    # Step 11: Train Random Forest
+   
     print("\n[11/17] Training Random Forest...")
     rf_model = RandomForestClassifier(
         n_estimators=100,
@@ -153,7 +153,7 @@ def main():
     rf_acc = accuracy_score(y_test, rf_model.predict(X_test_combined))
     print(f"✓ Random Forest Accuracy: {rf_acc:.4f}")
     
-    # Step 12: Select best model
+    
     print("\n[12/17] Selecting best model...")
     models = {
         'LogisticRegression': (lr_model, lr_acc),
@@ -166,10 +166,10 @@ def main():
     
     print(f"✓ Best model: {best_name} ({best_acc:.4f})")
     
-    # Step 13: Evaluation metrics
+   
     print("\n[13/17] Computing evaluation metrics...")
     
-    # Get predictions
+   
     if best_name == 'XGBoost' and best_model:
         y_pred = best_model.predict(X_test_combined.toarray())
         y_proba = best_model.predict_proba(X_test_combined.toarray())[:, 1]
@@ -180,20 +180,20 @@ def main():
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred, target_names=['Real', 'Fake']))
     
-    # Step 14: Confusion Matrix
+   
     print("\n[14/17] Confusion Matrix:")
     cm = confusion_matrix(y_test, y_pred)
     print(cm)
     
-    # Step 15: ROC-AUC Score
+   
     print("\n[15/17] Computing ROC-AUC...")
     roc_auc = roc_auc_score(y_test, y_proba)
     print(f"✓ ROC-AUC Score: {roc_auc:.4f}")
     
-    # Step 16: Save models
+    
     print("\n[16/17] Saving models...")
     import os
-    # Delete existing files to avoid loading stale models
+   
     for file in ['app/ml/fake_review_model.pkl', 'app/ml/tfidf_vectorizer.pkl']:
         if os.path.exists(file):
             os.remove(file)
@@ -216,7 +216,7 @@ def main():
     print("✓ Saved tfidf_vectorizer.pkl")
     print("✓ Saved model_metadata.json")
     
-    # Step 17: Sanity tests
+   
     print("\n[17/17] Running sanity tests...")
     
     test_reviews = [

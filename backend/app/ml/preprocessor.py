@@ -54,14 +54,14 @@ def extract_features(texts: list[str], ratings: list[int]) -> list[dict]:
     """
     features = []
     
-    # Regex patterns for feature detection
+   
     superlatives = r'\b(best|worst|amazing|perfect|horrible|excellent|awful|greatest)\b'
     generic = r'(love it|works great|highly recommend|great product|as described|fast shipping)'
     negative = r'\b(bad|terrible|awful|horrible|disappointing|poor|worst)\b'
     
     for text, rating in zip(texts, ratings):
         words = text.split()
-        word_count = len(words) + 1  # +1 to avoid division by zero
+        word_count = len(words) + 1  
         
         features.append({
             "text_length": len(text),

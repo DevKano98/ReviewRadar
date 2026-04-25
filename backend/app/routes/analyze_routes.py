@@ -97,7 +97,7 @@ async def reanalyze_product(product_id: str):
     if not reviews:
         raise HTTPException(status_code=400, detail="No reviews to analyze.")
 
-    # Re-classify all reviews
+   
     texts = [r.get("body", "") for r in reviews]
     ratings = [r.get("rating", 3) for r in reviews]
     results = classify_batch(texts, ratings)
@@ -106,7 +106,7 @@ async def reanalyze_product(product_id: str):
     for review, result in zip(reviews, results):
         classified_reviews.append({**review, **result})
 
-    # Recompute trust score
+   
     fake_count = sum(1 for r in results if r["is_fake"])
     real_count = len(results) - fake_count
     total = len(results)
@@ -117,7 +117,7 @@ async def reanalyze_product(product_id: str):
     trust_score = round(max(0, min(100, raw_score)), 1)
     verdict = "buy" if trust_score >= 70 else "avoid" if trust_score < 40 else "caution"
 
-    # Re-generate Gemini summary
+   
     real_reviews = [r for r in classified_reviews if not r.get("is_fake", False)]
     gemini_summary = await generate_summary(
         product.get("title", "Unknown Product"),
@@ -129,7 +129,7 @@ async def reanalyze_product(product_id: str):
         real_reviews,
     )
 
-    # Persist updates
+   
     queries.update_product_analysis(
         product_id, trust_score, fake_count, real_count, verdict, gemini_summary
     )

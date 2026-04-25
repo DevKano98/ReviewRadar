@@ -1,6 +1,4 @@
-"""
-Product endpoints for retrieving cached data.
-"""
+
 
 from uuid import UUID
 
@@ -39,15 +37,15 @@ async def recent_searches():
     """
     results = queries.get_recent_searches(limit=8)
     
-    # Serialize UUIDs and datetimes to strings
+    
     serialized = []
     for r in results:
         row = {}
         for k, v in r.items():
-            # Handle UUID objects
+           
             if hasattr(v, "hex"):
                 row[k] = str(v)
-            # Handle datetime objects
+            
             elif hasattr(v, "isoformat"):
                 row[k] = v.isoformat()
             else:
@@ -101,11 +99,11 @@ async def get_product(product_id: UUID):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    # Deep serialization for UUIDs and datetimes
+   
     def serialize(obj):
-        if hasattr(obj, "hex"):  # UUID
+        if hasattr(obj, "hex"):  
             return str(obj)
-        if hasattr(obj, "isoformat"):  # datetime
+        if hasattr(obj, "isoformat"): 
             return obj.isoformat()
         return obj
 

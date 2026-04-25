@@ -35,5 +35,5 @@ def test_connection() -> bool:
                 cur.execute("SELECT 1")
         return True
     except Exception as e:
-        print(f"❌ Database connection failed: {e}")
+        print(f"Database connection failed: {e}")
         return False

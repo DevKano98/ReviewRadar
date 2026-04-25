@@ -31,7 +31,7 @@ def get_cached_product(cache_key: str) -> Optional[dict]:
             if not row:
                 return None
             
-            # Check if cache is still fresh
+           
             scraped_at = row.get("scraped_at")
             if scraped_at:
                 cache_expiry = scraped_at + timedelta(hours=settings.CACHE_HOURS)
@@ -97,7 +97,7 @@ def save_reviews(reviews: list[dict], product_id: str) -> None:
     
     with get_connection() as conn:
         with conn.cursor() as cur:
-            # Prepare data tuples for batch insert
+           
             review_tuples = [
                 (
                     product_id,
@@ -137,21 +137,21 @@ def get_product_with_reviews(product_id: str) -> dict:
     """
     with get_connection() as conn:
         with conn.cursor() as cur:
-            # Fetch product
+           
             cur.execute("SELECT * FROM products WHERE id = %s", (product_id,))
             product = cur.fetchone()
             
             if not product:
                 return {}
             
-            # Fetch reviews
+           
             cur.execute(
                 "SELECT * FROM reviews WHERE product_id = %s ORDER BY created_at",
                 (product_id,)
             )
             reviews = cur.fetchall()
             
-            # Merge product and reviews
+           
             result = dict(product)
             result["reviews"] = reviews
             

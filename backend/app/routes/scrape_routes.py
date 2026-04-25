@@ -41,7 +41,7 @@ async def scrape_stream(url: str = Query(...)):
         try:
             cache_key = normalize_url(url)
 
-            # ===== STEP 1: Check cache =====
+           
             cached = queries.get_cached_product(cache_key)
             if cached:
                 yield {
@@ -53,7 +53,7 @@ async def scrape_stream(url: str = Query(...)):
                 }
                 product_with_reviews = queries.get_product_with_reviews(str(cached["id"]))
                 
-                # Serialize UUIDs and datetimes
+               
                 yield {
                     "event": "complete",
                     "data": json.dumps(serialize_obj(product_with_reviews))
@@ -61,15 +61,15 @@ async def scrape_stream(url: str = Query(...)):
                 queries.log_search(url, cache_key, str(cached["id"]))
                 return
 
-            # ===== STEP 2: Scrape product =====
+           
             reviews_raw = []
             product_info = {}
 
             try:
                 async for event in scrape_product_stream(url):
-                    yield event  # Forward scraping events to frontend
+                    yield event  
 
-                    # Parse event data
+                    
                     try:
                         parsed = json.loads(event["data"])
                     except Exception:
@@ -80,7 +80,7 @@ async def scrape_stream(url: str = Query(...)):
                     elif event["event"] == "review":
                         reviews_raw.append(parsed)
                     elif event["event"] == "error":
-                        return  # Stop on error
+                        return  
             except Exception as e:
                 yield {
                     "event": "error",
@@ -99,7 +99,7 @@ async def scrape_stream(url: str = Query(...)):
                 }
                 classified_reviews = []
             else:
-                # ===== STEP 3: ML Classification =====
+               
                 yield {
                     "event": "ml_start",
                     "data": json.dumps({
@@ -122,7 +122,7 @@ async def scrape_stream(url: str = Query(...)):
                     }
                     classified_reviews.append(classified)
                     
-                    # Stream each classification result
+                   
                     yield {
                         "event": "ml_result",
                         "data": json.dumps({
@@ -138,9 +138,9 @@ async def scrape_stream(url: str = Query(...)):
                             "fake_reasons": result["reasons"],
                         })
                     }
-                    await asyncio.sleep(0.03)  # Smooth streaming
+                    await asyncio.sleep(0.03)  
 
-            # ===== STEP 4: Compute trust score =====
+           
             fake_count = sum(1 for r in classified_reviews if r["is_fake"])
             real_count = len(classified_reviews) - fake_count
             total = len(classified_reviews)
@@ -176,7 +176,7 @@ async def scrape_stream(url: str = Query(...)):
                 })
             }
 
-            # ===== STEP 5: Gemini AI Summary =====
+           
             yield {
                 "event": "gemini_start",
                 "data": json.dumps({"msg": "Generating AI buy/skip verdict..."})
@@ -198,16 +198,16 @@ async def scrape_stream(url: str = Query(...)):
                 "data": json.dumps(gemini_summary)
             }
 
-            # ===== STEP 6: Upload image to Cloudinary =====
+           
             cloudinary_url = product_info.get("image_url", "")
             if cloudinary_url:
                 try:
                     cloudinary_url = upload_product_image(cloudinary_url, cache_key)
                 except Exception as e:
                     print(f"Cloudinary upload failed: {e}")
-                    pass  # Use original URL if upload fails
+                    pass  
 
-            # ===== STEP 7: Save to database =====
+            
             saved_product = queries.save_product({
                 "cache_key": cache_key,
                 "url": url,
@@ -235,7 +235,7 @@ async def scrape_stream(url: str = Query(...)):
                 })
             }
 
-            # ===== STEP 8: Return complete data =====
+           
             full_product = queries.get_product_with_reviews(str(saved_product["id"]))
             
             yield {
@@ -244,8 +244,7 @@ async def scrape_stream(url: str = Query(...)):
             }
 
         except Exception as e:
-            # Top-level safety net — ensures the client ALWAYS gets an error event
-            # instead of a silent connection drop
+           
             import traceback
             traceback.print_exc()
             try:
@@ -254,7 +253,7 @@ async def scrape_stream(url: str = Query(...)):
                     "data": json.dumps({"msg": f"Unexpected server error: {str(e)}"})
                 }
             except Exception:
-                pass  # Last resort — nothing more we can do
+                pass  
 
     return EventSourceResponse(generator())
 
